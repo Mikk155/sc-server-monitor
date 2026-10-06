@@ -316,13 +316,17 @@ def main() -> None:
 
                     continue;
 
+                fails: int = config[ "fails" ];
+
                 if ServerCanResponse( port ):
 
-                    config[ "fails" ] = 0
+                    if fails > 0:
+                        config[ "fails" ] = 0
+                        Print( f"[WARN] Server on port {port} responded." );
 
                 else:
 
-                    fails: int = config[ "fails" ] + 1;
+                    fails += 1;
                     config[ "fails" ] = fails;
 
                     maxRetries: int = gpConfig[ "max_retries" ];
