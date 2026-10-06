@@ -263,7 +263,6 @@ def main() -> None:
     PopSchema();
     RetrieveConfig( True );
     global gpConfig;
-    print( gpConfig )
     ParseServersConfig( gpConfig[ "servers" ] );
 
     try:
