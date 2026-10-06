@@ -1,0 +1,19 @@
+{
+    "$schema": "schema.json",
+    "timeout": 5.0,
+    "max_retries": 3,
+    "check_interval": 5,
+    "servers":
+    [
+        {
+            "app": "svends.exe",
+            "port": 27018,
+            "map": "hl_c04",
+            "args": [
+                "-netthread",
+                "-console",
+                "+maxplayers", "32"
+            ]
+        }
+    ]
+}
