@@ -10,6 +10,7 @@ Unlike simple process-checkers, this monitor uses real-time **A2S_INFO UDP netwo
 - **Port-Based Window Titles:** Automatically sets the native Windows command console title to `Port XXXX` for straightforward identification.
 - **Correct Working Directory Binding:** Launches servers natively inside the root directory to guarantee configuration files and maps (like `hl_c04`) initialize seamlessly.
 - **JSON Schema Validation:** Includes full JSON Schema support for auto-completion and syntax checks within modern IDEs.
+- **Discord webhook** Send the CLI outputs to a discord channel.
 
 ## Installation
 
@@ -42,6 +43,10 @@ Configure your dedicated instances using clear objects. The script manages forma
 ```json
 {
     "$schema": "schema.json",
+    "timeout": 5.0,
+    "max_retries": 3,
+    "check_interval": 5,
+    "discord_webhook": "",
     "servers":
     [
         {
@@ -56,4 +61,5 @@ Configure your dedicated instances using clear objects. The script manages forma
         }
     ]
 }
+
 ```

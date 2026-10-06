@@ -3,9 +3,10 @@ import time;
 import json;
 import shlex;
 import psutil;
+import socket;
+import urllib.request
 import jsonschema;
 import subprocess;
-import socket;
 
 global gpWorkingDirectory;
 gpWorkingDirectory: str = os.path.dirname( os.path.abspath( __file__ ) );
@@ -32,6 +33,11 @@ def GetSchema() -> dict:
             "$schema":
             {
                 "type": "string"
+            },
+            "discord_webhook":
+            {
+                "type": "string",
+                "description": "Discord webhook url to output this program's messages"
             },
             "timeout":
             {
@@ -252,12 +258,35 @@ def ParseServersConfig( config: list[dict] ) -> None:
         # -TODO Is this necesary? Isn't curConfig a reference?
         gpServersData[i] = curConfig;
 
+def Print( msg: str ) -> None:
+
+    print( msg );
+
+    discordWebHook: str | None = gpConfig.get( "discord_webhook", None );
+
+    if discordWebHook is not None and discordWebHook != "":
+
+        try:
+
+            req = urllib.request.Request(
+                discordWebHook,
+                data= json.dumps( { "content": msg } ).encode( "utf-8" ),
+                headers={ "Content-Type": "application/json", "User-Agent": "Mozilla/5.0" }
+            );
+
+            with urllib.request.urlopen( req ) as response:
+                if response.status != 204:
+                    print( f"[ERROR] failed to send webhook to discord: {response.status_code}")
+
+        except Exception as e:
+            print( f"[ERROR] failed to send webhook to discord: {e}")
+
 def main() -> None:
 
     global gpGameDirectory;
     print( "==================================================" );
-    print( " Sven Co-op Server Monitor Active" );
-    print( f" Game Directory (CWD): {gpGameDirectory}" );
+    Print( " Sven Co-op Server Monitor Active" );
+    Print( f" Game Directory (CWD): {gpGameDirectory}" );
     print( "==================================================" );
 
     PopSchema();
@@ -277,10 +306,10 @@ def main() -> None:
                 if proc is None or proc.poll() is not None:
 
                     if proc is not None:
-                        print( f"[CRASH] Server on port {port} closed unexpectedly. Restarting..." );
+                        Print( f"[CRASH] Server on port {port} closed unexpectedly. Restarting..." );
 
                     else:
-                        print( f"[START] Launching server on port {port}..." );
+                        Print( f"[START] Launching server on port {port}..." );
 
                     config[ "proc" ] = ServerStart( config[ "config" ] );
                     config[ "fails" ] = 0;
@@ -298,10 +327,10 @@ def main() -> None:
 
                     maxRetries: int = gpConfig[ "max_retries" ];
 
-                    print( f"[WARN] Server on port {port} is not responding ({fails}/{maxRetries})" );
+                    Print( f"[WARN] Server on port {port} is not responding ({fails}/{maxRetries})" );
 
                     if fails >= maxRetries:
-                        print( f"[FREEZE] Port {port} hung up due to script loop. Forcing termination..." );
+                        Print( f"[FREEZE] Port {port} hung up due to script loop. Forcing termination..." );
                         ServerShutdown( proc );
                         config[ "proc" ] = ServerStart( config[ "config" ] );
                         config[ "fails" ] = 0
@@ -313,7 +342,7 @@ def main() -> None:
 
     except KeyboardInterrupt:
 
-        print( "\nStopping monitor. Terminating all active game servers..." );
+        Print( "\nStopping monitor. Terminating all active game servers..." );
 
         for s in gpServersData:
             ServerShutdown( s[ "proc" ] );
